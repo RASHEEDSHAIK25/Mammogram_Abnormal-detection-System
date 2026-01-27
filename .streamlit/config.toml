@@ -1,0 +1,9 @@
+[client]
+showErrorDetails = true
+
+[logger]
+level = "error"
+
+[server]
+maxUploadSize = 200
+enableXsrfProtection = false

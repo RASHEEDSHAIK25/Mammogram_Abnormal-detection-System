@@ -1,0 +1,34 @@
+{
+  "accuracy": 0.5598290598290598,
+  "macro_avg": {
+    "precision": 0.1866096866096866,
+    "recall": 0.3333333333333333,
+    "f1_score": 0.2392694063926941
+  },
+  "weighted_avg": {
+    "precision": 0.3134085762290891,
+    "recall": 0.5598290598290598,
+    "f1_score": 0.4018499004800375
+  },
+  "per_class": {
+    "normal": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "support": 40
+    },
+    "benign": {
+      "precision": 0.5598290598290598,
+      "recall": 1.0,
+      "f1_score": 0.7178082191780822,
+      "support": 131
+    },
+    "malignant": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "support": 63
+    }
+  },
+  "auc": 0.756799405922213
+}

@@ -13,6 +13,7 @@ from io import BytesIO
 from PIL import Image
 from data_utils import CLASS_NAMES
 from gradcam_utils import make_gradcam_heatmap, overlay_gradcam
+from model_utils import is_lfs_pointer
 
 # Page config
 st.set_page_config(
@@ -245,9 +246,28 @@ RESNET50_LAYER = "conv5_block3_out"
 @st.cache_resource
 def load_model(model_path):
     """Load a Keras model with caching."""
-    if os.path.exists(model_path):
+    if not os.path.exists(model_path):
+        st.warning(f"⚠️ Model file not found: {model_path}")
+        return None
+    
+    # Check if file is an LFS pointer (not actual binary)
+    if is_lfs_pointer(model_path):
+        st.error(
+            f"""
+            ❌ Model file `{model_path}` is incomplete (LFS pointer).
+            
+            **Solution:** 
+            - For local testing: Run `git lfs pull` to download actual files
+            - For Cloud deployment: Upload models to GitHub Releases
+            """
+        )
+        return None
+    
+    try:
         return tf.keras.models.load_model(model_path)
-    return None
+    except Exception as e:
+        st.error(f"Error loading model {model_path}: {str(e)}")
+        return None
 
 def preprocess_uploaded_image(uploaded_file):
     """

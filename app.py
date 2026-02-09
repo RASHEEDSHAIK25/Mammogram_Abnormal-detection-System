@@ -7,6 +7,10 @@ import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+os.environ["TF_FORCE_LOAD_NONZERO"] = "1"
+os.environ["TF_CPP_MAX_VLOG_LEVEL"] = "0"
+os.environ["TF_NUM_INTEROP_THREADS"] = "1"
+os.environ["TF_NUM_INTRAOP_THREADS"] = "1"
 
 import streamlit as st
 print("🚀 Starting Streamlit App...")
@@ -22,6 +26,7 @@ st.set_page_config(
 
 print("✅ Page config set. Importing libraries...")
 import json
+import sys
 import numpy as np
 import tensorflow as tf
 print("✅ TensorFlow imported.")
@@ -260,9 +265,9 @@ st.markdown("""
 VGG16_LAYER = "block5_conv3"
 RESNET50_LAYER = "conv5_block3_out"
 
-# Removed cache to save memory - we need to load/unload models to stay within free tier limits
+@st.cache_resource(show_spinner=False)
 def load_model(model_path):
-    """Load a Keras model (without caching to save memory)."""
+    """Load a Keras model with caching to avoid reloading on every interaction."""
     if not os.path.exists(model_path):
         st.warning(f"⚠️ Model file not found: {model_path}")
         return None
@@ -281,14 +286,20 @@ def load_model(model_path):
         return None
     
     try:
-        print(f"Loading model from {model_path}...")
-        # compile=False is much faster and uses less memory (we only need inference)
-        model = tf.keras.models.load_model(model_path, compile=False)
-        print(f"Successfully loaded model from {model_path}")
+        model_name = os.path.basename(model_path)
+        with st.spinner(f"⏳ Loading {model_name}... (this happens only once)"):
+            print(f"Loading model from {model_path}...")
+            sys.stdout.flush()
+            
+            # compile=False is much faster and uses less memory (we only need inference)
+            model = tf.keras.models.load_model(model_path, compile=False)
+            print(f"Successfully loaded model from {model_path}")
+            sys.stdout.flush()
         return model
+        
     except Exception as e:
-        print(f"Error loading model {model_path}: {str(e)}")
-        st.error(f"Error loading model {model_path}: {str(e)}")
+        print(f"Error loading model {model_path}: {type(e).__name__}: {str(e)[:100]}")
+        st.error(f"❌ Error loading {model_name}: {type(e).__name__}")
         return None
 
 def preprocess_uploaded_image(uploaded_file):
@@ -373,7 +384,7 @@ def predict_and_gradcam(model, img_array, layer_name, model_name, original_img_n
         # Create a heatmap based on image intensity and prediction confidence
         gray = np.dot(original_normalized[...,:3], [0.2989, 0.5870, 0.1140])
         gray_norm = (gray - gray.min()) / (gray.max() - gray.min() + 1e-8)
-        confidence = max(probs.values())
+        confidence = max(probabilities.values())
         
         h, w = 224, 224
         y, x = np.ogrid[:h, :w]

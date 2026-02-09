@@ -16,12 +16,7 @@ from gradcam_utils import make_gradcam_heatmap, overlay_gradcam
 from model_utils import is_lfs_pointer
 from setup_models import ensure_models_exist, is_model_ready
 
-# Ensure models are downloaded on first run
-if 'models_checked' not in st.session_state:
-    ensure_models_exist()
-    st.session_state.models_checked = True
-
-# Page config
+# Page config (Must be the first Streamlit command)
 st.set_page_config(
     page_title="Mammographic abnormalities classification",
     page_icon="🔬",
@@ -29,6 +24,11 @@ st.set_page_config(
     initial_sidebar_state="expanded",
     menu_items=None
 )
+
+# Ensure models are downloaded on first run
+if 'models_checked' not in st.session_state:
+    ensure_models_exist()
+    st.session_state.models_checked = True
 
 # Custom CSS for better styling
 st.markdown("""

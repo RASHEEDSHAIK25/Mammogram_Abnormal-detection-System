@@ -21,11 +21,14 @@ def download_model(model_path, url):
     os.makedirs(os.path.dirname(model_path), exist_ok=True)
     
     try:
+        print(f"Starting download: {model_path} from {url}")
         with st.spinner(f"⏳ Downloading {os.path.basename(model_path)}..."):
             urllib.request.urlretrieve(url, model_path)
+        print(f"Successfully downloaded: {model_path}")
         st.success(f"✅ Downloaded {os.path.basename(model_path)}")
         return True
     except Exception as e:
+        print(f"Failed to download {model_path}: {str(e)}")
         st.error(f"❌ Failed to download {model_path}: {str(e)}")
         return False
 

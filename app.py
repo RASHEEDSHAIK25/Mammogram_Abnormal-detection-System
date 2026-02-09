@@ -2,19 +2,8 @@
 Streamlit dashboard for Mammographic abnormalities classification.
 Compares VGG16 and ResNet50 models side by side.
 """
-import os
-import json
-import numpy as np
-import tensorflow as tf
 import streamlit as st
-import matplotlib.pyplot as plt
-import pandas as pd
-from io import BytesIO
-from PIL import Image
-from data_utils import CLASS_NAMES
-from gradcam_utils import make_gradcam_heatmap, overlay_gradcam
-from model_utils import is_lfs_pointer
-from setup_models import ensure_models_exist, is_model_ready
+print("🚀 Starting Streamlit App...")
 
 # Page config (Must be the first Streamlit command)
 st.set_page_config(
@@ -25,10 +14,27 @@ st.set_page_config(
     menu_items=None
 )
 
+print("✅ Page config set. Importing libraries...")
+import os
+import json
+import numpy as np
+import tensorflow as tf
+print("✅ TensorFlow imported.")
+import matplotlib.pyplot as plt
+import pandas as pd
+from io import BytesIO
+from PIL import Image
+from data_utils import CLASS_NAMES
+from gradcam_utils import make_gradcam_heatmap, overlay_gradcam
+from model_utils import is_lfs_pointer
+from setup_models import ensure_models_exist, is_model_ready
+
 # Ensure models are downloaded on first run
 if 'models_checked' not in st.session_state:
+    print("🔍 Checking models...")
     ensure_models_exist()
     st.session_state.models_checked = True
+    print("✅ Models checked.")
 
 # Custom CSS for better styling
 st.markdown("""

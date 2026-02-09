@@ -2,6 +2,12 @@
 Streamlit dashboard for Mammographic abnormalities classification.
 Compares VGG16 and ResNet50 models side by side.
 """
+# Configure TensorFlow for CPU-only BEFORE any imports
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+
 import streamlit as st
 print("🚀 Starting Streamlit App...")
 
@@ -15,7 +21,6 @@ st.set_page_config(
 )
 
 print("✅ Page config set. Importing libraries...")
-import os
 import json
 import numpy as np
 import tensorflow as tf

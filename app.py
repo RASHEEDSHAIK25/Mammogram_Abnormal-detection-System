@@ -808,17 +808,17 @@ def main():
     
     st.sidebar.markdown("---")
     
-    # Model status
+    # Model status - Check existence only, don't load
     st.sidebar.markdown("### 🤖 Model Status")
-    vgg16_model = load_model('models/vgg16_final.h5')
-    resnet50_model = load_model('models/resnet50_final.h5')
+    vgg16_exists = os.path.exists('models/vgg16_final.h5')
+    resnet50_exists = os.path.exists('models/resnet50_final.h5')
     
-    if vgg16_model:
+    if vgg16_exists:
         st.sidebar.success("✅ VGG16: Ready")
     else:
         st.sidebar.error("❌ VGG16: Not found")
     
-    if resnet50_model:
+    if resnet50_exists:
         st.sidebar.success("✅ ResNet50: Ready")
     else:
         st.sidebar.error("❌ ResNet50: Not found")
@@ -906,18 +906,32 @@ def main():
     
     # Display based on selected page
     if page == "🔵 VGG16":
+        with st.spinner("Loading VGG16 model..."):
+            vgg16_model = load_model('models/vgg16_final.h5')
+        
         vgg16_pred, vgg16_probs, vgg16_conf = display_model_section(
             vgg16_model, "VGG16", VGG16_LAYER, img_array,
             original_img, original_img_display,
             'figs/vgg16_cm.png', 'figs/vgg16_roc.png'
         )
+        # Clear memory
+        del vgg16_model
+        import gc
+        gc.collect()
     
     elif page == "🔴 ResNet50":
+        with st.spinner("Loading ResNet50 model..."):
+            resnet50_model = load_model('models/resnet50_final.h5')
+            
         resnet50_pred, resnet50_probs, resnet50_conf = display_model_section(
             resnet50_model, "ResNet50", RESNET50_LAYER, img_array,
             original_img, original_img_display,
             'figs/resnet50_cm.png', 'figs/resnet50_roc.png'
         )
+        # Clear memory
+        del resnet50_model
+        import gc
+        gc.collect()
     
     elif page == "📊 Comparison":
         st.markdown('<div class="section-header">📊 Side-by-Side Model Comparison</div>', unsafe_allow_html=True)
@@ -960,19 +974,33 @@ def main():
         
         with comp_col1:
             st.markdown("### 🔵 VGG16 Model")
+            with st.spinner("Loading VGG16..."):
+                vgg16_model = load_model('models/vgg16_final.h5')
+            
             vgg16_pred, vgg16_probs, vgg16_conf = display_model_section(
                 vgg16_model, "VGG16", VGG16_LAYER, img_array, 
                 original_img, original_img_display, 
                 'figs/vgg16_cm.png', 'figs/vgg16_roc.png'
             )
+            # Clear memory immediately
+            del vgg16_model
+            import gc
+            gc.collect()
         
         with comp_col2:
             st.markdown("### 🔴 ResNet50 Model")
+            with st.spinner("Loading ResNet50..."):
+                resnet50_model = load_model('models/resnet50_final.h5')
+                
             resnet50_pred, resnet50_probs, resnet50_conf = display_model_section(
                 resnet50_model, "ResNet50", RESNET50_LAYER, img_array,
                 original_img, original_img_display,
                 'figs/resnet50_cm.png', 'figs/resnet50_roc.png'
             )
+            # Clear memory immediately
+            del resnet50_model
+            import gc
+            gc.collect()
         
         # Prediction comparison
         if vgg16_pred and resnet50_pred:
@@ -996,21 +1024,28 @@ def main():
     elif page == "🏆 Best Model":
         st.markdown('<div class="section-header">🏆 Best Model Analysis</div>', unsafe_allow_html=True)
         
-        # Get predictions from both models
-        if vgg16_model:
-            with st.spinner("Analyzing with VGG16..."):
+        # Get predictions from both models (load one by one)
+        with st.spinner("Analyzing with VGG16..."):
+            vgg16_model = load_model('models/vgg16_final.h5')
+            if vgg16_model:
                 vgg16_pred, vgg16_probs, _ = predict_and_gradcam(
                     vgg16_model, img_array, VGG16_LAYER, "VGG16", original_img
                 )
-            vgg16_conf = max(vgg16_probs.values())
+                vgg16_conf = max(vgg16_probs.values())
+                del vgg16_model
+                import gc
+                gc.collect()
         
-        if resnet50_model:
-            with st.spinner("Analyzing with ResNet50..."):
+        with st.spinner("Analyzing with ResNet50..."):
+            resnet50_model = load_model('models/resnet50_final.h5')
+            if resnet50_model:
                 resnet50_pred, resnet50_probs, _ = predict_and_gradcam(
                     resnet50_model, img_array, RESNET50_LAYER, "ResNet50", original_img
                 )
-            resnet50_conf = max(resnet50_probs.values())
-        
+                resnet50_conf = max(resnet50_probs.values())
+                del resnet50_model
+                import gc
+                gc.collect()
         # Compare and show best result
         compare_models(vgg16_pred, vgg16_probs, vgg16_conf, 
                       resnet50_pred, resnet50_probs, resnet50_conf)

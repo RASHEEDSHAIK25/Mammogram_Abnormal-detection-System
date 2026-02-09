@@ -249,9 +249,9 @@ st.markdown("""
 VGG16_LAYER = "block5_conv3"
 RESNET50_LAYER = "conv5_block3_out"
 
-@st.cache_resource
+# Removed cache to save memory - we need to load/unload models to stay within free tier limits
 def load_model(model_path):
-    """Load a Keras model with caching."""
+    """Load a Keras model (without caching to save memory)."""
     if not os.path.exists(model_path):
         st.warning(f"⚠️ Model file not found: {model_path}")
         return None
@@ -270,8 +270,13 @@ def load_model(model_path):
         return None
     
     try:
-        return tf.keras.models.load_model(model_path)
+        print(f"Loading model from {model_path}...")
+        # compile=False is much faster and uses less memory (we only need inference)
+        model = tf.keras.models.load_model(model_path, compile=False)
+        print(f"Successfully loaded model from {model_path}")
+        return model
     except Exception as e:
+        print(f"Error loading model {model_path}: {str(e)}")
         st.error(f"Error loading model {model_path}: {str(e)}")
         return None
 
